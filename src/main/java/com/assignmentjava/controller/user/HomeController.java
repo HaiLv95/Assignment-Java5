@@ -12,10 +12,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,12 +34,15 @@ public class HomeController {
     @Autowired
     CategoryRepository categoryRepository;
     @RequestMapping({"", "home"})
-    public String homeView(){
+    public String homeView(@ModelAttribute("message")String message, Model model){
         Pageable top1ProductPageable = PageRequest.of(0, 1, Sort.Direction.DESC, "sell");
         Pageable top3ProductPageable = PageRequest.of(0, 3, Sort.Direction.DESC, "sell");
         req.setAttribute("top1Product", productRepository.findAll(top1ProductPageable).toList().get(0));
         req.setAttribute("top3Categories", productRepository.findTop3CategoryID());
         req.setAttribute("top3products", productRepository.findAll(top3ProductPageable).toList());
+        if (message.length() > 0) {
+            model.addAttribute("message", message);
+        }
         return "user/home";
     }
     @GetMapping("/images/{filename:.+}")

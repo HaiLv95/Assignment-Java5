@@ -63,6 +63,30 @@ public class ShopController {
         return "user/shop";
     }
 
+    @GetMapping("search")
+    public String search(@ModelAttribute("name") Optional<String> name, Model model) {
+        Pageable pageable = PageRequest.of(0, 12, Sort.by((Sort.Direction.ASC), "id"));
+        Page<Product> resultPage = null;
+        String nameSearch = name.orElse("all");
+        System.out.println(nameSearch);
+        if (!nameSearch.equalsIgnoreCase("all")) {
+            resultPage = productRepository.findAllByNameContaining(nameSearch, pageable);
+            if (resultPage.isEmpty()) resultPage = productRepository.findAllByAvailable(true, pageable);
+        } else {
+            resultPage = productRepository.findAllByAvailable(true, pageable);
+        }
+        if (resultPage.getTotalPages() > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, resultPage.getTotalPages())
+                    .boxed()
+                    .collect(Collectors.toList());
+
+            model.addAttribute("pageNumbers", pageNumbers);
+            model.addAttribute("sortName", "name");
+        }
+        model.addAttribute("productsPage", resultPage);
+        return "user/shop";
+    }
+
     @GetMapping("/sort")
     public String sortAccount(@RequestParam("page") Optional<Integer> page,
                               @RequestParam("size") Optional<Integer> size,
@@ -107,7 +131,7 @@ public class ShopController {
     }
 
     @ModelAttribute("top3Product")
-    public List<Product> top3Product(){
+    public List<Product> top3Product() {
         Pageable pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "sell"));
         return productRepository.findAllByAvailable(true, pageable).toList();
     }

@@ -17,4 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query
     Page<Product> findAllByAvailable(boolean available, Pageable pageable);
+
+    @Query
+    Page<Product> findAllByNameContaining(String name, Pageable pageable);
 }

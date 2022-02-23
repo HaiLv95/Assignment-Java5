@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,9 @@ public class UserManagerController {
 
     @Autowired
     SupportServices supportService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     boolean sortIndex = true;
 
@@ -119,7 +123,6 @@ public class UserManagerController {
     @GetMapping("add")
     public String add(@ModelAttribute("message") String message, Model model) {
         if (message.length() > 0) {
-            System.out.println("message " + message + " / " + message.length());
             model.addAttribute("message", message);
         }
         AccountDTO dto = new AccountDTO();
@@ -145,16 +148,19 @@ public class UserManagerController {
     @PostMapping("addOrEdit")
     public String addOrEdit(@Valid @ModelAttribute("account") AccountDTO dto,
                             RedirectAttributes redirect) {
-        Account checkAccount = accountRepository.getById(dto.getUsername());
+        Optional<Account> checkAccount = accountRepository.findById(dto.getUsername());
+        Account account = new Account();
+        BeanUtils.copyProperties(dto, account);
         if (!dto.isEdit()) {
-            if (checkAccount != null) {
+            if (checkAccount.isPresent()) {
                 redirect.addFlashAttribute("message", "Tài khoản đã tồn tại vui lòng chọn tài khoản khác");
                 return "redirect:/admin/user-manager/add";
             }
+            account.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }else {
+            account.setPassword(checkAccount.get().getPassword());
         }
-        Account account = new Account();
-        BeanUtils.copyProperties(dto, account);
-        account.setPassword(checkAccount.getPassword());
+
         if (!dto.getImageFile().isEmpty()) {
             String uuid = UUID.randomUUID().toString();
             account.setPhoto(systemStorageServices.getStoredFileName(dto.getImageFile(), uuid));

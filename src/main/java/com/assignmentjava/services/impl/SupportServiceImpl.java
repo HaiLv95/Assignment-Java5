@@ -20,11 +20,6 @@ public class SupportServiceImpl implements SupportServices {
     JavaMailSender mailSender;
 
     @Override
-    public String getBCryptPasswordEndCoder(String normalPassword){
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        return encoder.encode(normalPassword);
-    }
-    @Override
     public void sendEmail(Mail mail) throws MessagingException {
         // Tạo message
         MimeMessage message = mailSender.createMimeMessage();

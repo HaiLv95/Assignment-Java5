@@ -11,7 +11,12 @@
 <!--Nav-->
 <div th:insert="~{/layout/navbar-user :: nav-bar}"></div>
 <!--End Nav-->
+<!--  Toast  -->
+<div th:if="${message.length()} > 0">
+    <div th:replace="~{toast/toast-success}"></div>
+</div>
 
+<!--  End Toast  -->
 
 <!--Content-->
 <div class="container-fluid">
